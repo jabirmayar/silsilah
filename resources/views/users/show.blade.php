@@ -28,7 +28,7 @@
 @section ('script')
 <script>
 (function () {
-    $('select').select2();
+    // $('select').select2();
     $('input[name=marriage_date]').datetimepicker({
         timepicker:false,
         format:'Y-m-d',

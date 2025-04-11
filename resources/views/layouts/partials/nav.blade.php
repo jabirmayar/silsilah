@@ -24,21 +24,24 @@
             </ul>
 
             <!-- Right Side Of Navbar -->
-            <ul class="nav navbar-nav navbar-right">
+            <ul class="nav navbar-nav navbar-right d-flex align-items-center">
                 <!-- Authentication Links -->
                 <?php $mark = (preg_match('/\?/', url()->current())) ? '&' : '?';?>
-                <li><a href="{{ url(url()->current() . $mark . 'lang=en') }}">en</a></li>
-                <li><a href="{{ url(url()->current() . $mark . 'lang=id') }}">id</a></li>
-                <li><a href="{{ url(url()->current() . $mark . 'lang=ur') }}">ur</a></li>
+                <li class="nav-item">
+                    <select class="form-control" style="margin-top: 7px !important;" onchange="window.location.href=this.value;">
+                        <option value="{{ url(url()->current() . $mark . 'lang=en') }}" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
+                        <option value="{{ url(url()->current() . $mark . 'lang=ur') }}" {{ app()->getLocale() == 'ur' ? 'selected' : '' }}>اردو</option>
+                    </select>
+                </li>
                 @if (Auth::guest())
-                    <li><a href="{{ route('login') }}">Login</a></li>
-                    <li><a href="{{ route('register') }}">Register</a></li>
+                    <li class="nav-item"><a href="{{ route('login') }}">Login</a></li>
+                    <li class="nav-item"><a href="{{ route('register') }}">Register</a></li>
                 @else
-                    <li class="dropdown">
+                    <li class="dropdown nav-item">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
                             {{ Auth::user()->name }} <span class="caret"></span>
                         </a>
-
+            
                         <ul class="dropdown-menu" role="menu">
                             @if (is_system_admin(auth()->user()))
                                 <li><a href="{{ route('backups.index') }}">{{ __('backup.list') }}</a></li>
@@ -51,7 +54,7 @@
                                              document.getElementById('logout-form').submit();">
                                     Logout
                                 </a>
-
+            
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                     {{ csrf_field() }}
                                 </form>
@@ -60,6 +63,7 @@
                     </li>
                 @endif
             </ul>
+            
         </div>
     </div>
 </nav>

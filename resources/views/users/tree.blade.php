@@ -80,28 +80,28 @@ $udhegTotal = 0;
 <hr>
 <div class="row">
     @if ($childsTotal)
-    <div class="col-md-1 text-right">{{ trans('app.child_count') }}</div>
-    <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $childsTotal }}</strong></div>
+        <div class="col-md-1 text-right">{{ trans('app.child_count') }}</div>
+        <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $childsTotal }}</strong></div>
     @endif
     @if ($grandChildsTotal)
-    <div class="col-md-1 text-right">{{ trans('app.grand_child_count') }}</div>
-    <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $grandChildsTotal }}</strong></div>
+        <div class="col-md-1 text-right">{{ trans('app.grand_child_count') }}</div>
+        <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $grandChildsTotal }}</strong></div>
     @endif
     @if ($ggTotal)
-    <div class="col-md-1 text-right">Jumlah Cicit</div>
-    <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $ggTotal }}</strong></div>
+        <div class="col-md-1 text-right">{{ trans('app.great_grand_child_count') }}</div>
+        <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $ggTotal }}</strong></div>
     @endif
     @if ($ggcTotal)
-    <div class="col-md-1 text-right">Jumlah Canggah</div>
-    <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $ggcTotal }}</strong></div>
+        <div class="col-md-1 text-right">{{ trans('app.great_great_grand_child_count') }}</div>
+        <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $ggcTotal }}</strong></div>
     @endif
     @if ($ggccTotal)
-    <div class="col-md-1 text-right">Jumlah Wareng</div>
-    <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $ggccTotal }}</strong></div>
+        <div class="col-md-1 text-right">{{ trans('app.great_great_great_grand_child_count') }}</div>
+        <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $ggccTotal }}</strong></div>
     @endif
     @if ($udhegTotal)
-    <div class="col-md-1 text-right">Jumlah Udheg2</div>
-    <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $udhegTotal }}</strong></div>
+        <div class="col-md-1 text-right">{{ trans('app.udheg_count') }}</div>
+        <div class="col-md-1 text-left"><strong style="font-size:30px">{{ $udhegTotal }}</strong></div>
     @endif
 </div>
 @endsection

@@ -70,7 +70,7 @@
 
 <script>
     (function() {
-        $('select').select2();
+        // $('select').select2();
         $('#dob,#dod').datetimepicker({
             timepicker:false,
             format:'Y-m-d',
