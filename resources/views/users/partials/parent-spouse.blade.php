@@ -4,6 +4,185 @@
     <table class="table">
         <tbody>
             <tr>
+                <th class="col-sm-4">{{ __('app.family') }}</th>
+                <td class="col-sm-8">
+                    @can ('edit', $user)
+                        @if (request('action') == 'set_family')
+                        {{ Form::open(['route' => ['family-actions.set-family', $user->id]]) }}
+                        
+                        <div class="form-group">
+                            <select name="family_id" class="form-control family-select" data-placeholder="{{ __('app.search_for_family') }}">
+                                @if ($user->family)
+                                    <option value="{{ $user->family_id }}" selected>{{ $user->family->name }}</option>
+                                @endif
+                            </select>
+                        </div>
+                        
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="create_new_family"> {{ __('app.create_new_family') }}
+                            </label>
+                        </div>
+                        
+                        <div id="new_family_form" style="display: none;">
+                            <div class="form-group">
+                                {{ Form::text('new_family_name', null, ['class' => 'form-control input-sm', 'placeholder' => __('app.family_name')]) }}
+                            </div>
+                            
+                            <div class="form-group">
+                                {{ Form::textarea('new_family_description', null, ['class' => 'form-control input-sm', 'rows' => 2, 'placeholder' => __('app.family_description')]) }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <select name="parent_family_id" class="form-control family-select" data-placeholder="{{ __('app.search_parent_family') }}">
+                                    @if ($user->family && $user->family->parent)
+                                        <option value="{{ $user->family->parent_id }}" selected>{{ $user->family->parent->name }}</option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ Form::submit(__('app.update'), ['class' => 'btn btn-primary btn-sm', 'id' => 'set_family_button']) }}
+                            {{ link_to_route('users.show', __('app.cancel'), [$user->id], ['class' => 'btn btn-default btn-sm']) }}
+                        </div>
+                        
+                        {{ Form::close() }}
+                        @else
+                            @if ($user->family)
+                                <div class="family-hierarchy">
+                                    <!-- Current family -->
+                                    <div class="current-family">
+                                        {{ $user->familyLink() }}
+                                    </div>
+                                    
+                                    <!-- Parent families (if any) -->
+                                    @if ($user->family->parent)
+                                    <div class="parent-families">
+                                        <small>{{ __('app.parent_family') }}: 
+                                        @php
+                                            $parentFamily = $user->family->parent;
+                                            $parentChain = [];
+                                            while ($parentFamily) {
+                                                $parentChain[] = link_to_route('users.show', $parentFamily->name, [$parentFamily->id]);
+                                                $parentFamily = $parentFamily->parent;
+                                            }
+                                            echo implode(' → ', array_reverse($parentChain));
+                                        @endphp
+                                        </small>
+                                    </div>
+                                    @endif
+                                    
+                                    <!-- Child families (if any) -->
+                                    @if ($user->family->children->count() > 0)
+                                    <div class="child-families">
+                                        <small>{{ __('app.child_families') }}: {{ $user->family->children->count() }}</small>
+                                    </div>
+                                    @endif
+                                </div>
+                                
+                                <div class="pull-right">
+                                    {{ link_to_route('users.show', __('app.change_family'), [$user->id, 'action' => 'set_family'], ['class' => 'btn btn-link btn-xs']) }}
+                                </div>
+                            @else
+                                {{ __('app.not_set') }}
+                                <div class="pull-right">
+                                    {{ link_to_route('users.show', __('app.set_family'), [$user->id, 'action' => 'set_family'], ['class' => 'btn btn-link btn-xs']) }}
+                                </div>
+                            @endif
+                        @endif
+                    @else
+                        @if ($user->family)
+                            {{ $user->familyLink() }}
+                            @if ($user->family->parent)
+                                <small>({{ __('app.parent') }}: {{ link_to_route('users.show', $user->family->parent->name, [$user->family->parent_id]) }})</small>
+                            @endif
+                        @else
+                            {{ __('app.not_set') }}
+                        @endif
+                    @endcan
+                </td>
+            </tr>
+            
+            <!-- Child Families Section -->
+            @if ($user->family)
+            <tr>
+                <th class="col-sm-4">{{ __('app.child_families') }}</th>
+                <td class="col-sm-8">
+                    @can ('edit', $user)
+                        @if (request('action') == 'add_child_family')
+                        {{ Form::open(['route' => ['family-actions.add-child-family', $user->id]]) }}
+                        
+                        <div class="form-group">
+                            <select name="child_family_id" class="form-control family-select" data-placeholder="{{ __('app.search_for_child_family') }}">
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ Form::submit(__('app.add'), ['class' => 'btn btn-primary btn-sm']) }}
+                            {{ link_to_route('users.show', __('app.cancel'), [$user->id], ['class' => 'btn btn-default btn-sm']) }}
+                        </div>
+                        
+                        {{ Form::close() }}
+                        @else
+                            @if ($user->family->children->count() > 0)
+                                <ul class="list-unstyled">
+                                    @foreach($user->family->children as $childFamily)
+                                    <li>
+                                        {{ link_to_route('users.show', $childFamily->name, [$childFamily->id]) }}
+                                        <a href="{{ route('family-actions.remove-child-family', [$user->id, $childFamily->id]) }}" 
+                                           class="text-danger" 
+                                           onclick="return confirm('{{ __('app.are_you_sure') }}')">
+                                            <small>({{ __('app.remove') }})</small>
+                                        </a>
+                                        
+                                        @if ($childFamily->children->count() > 0)
+                                            <ul class="list-unstyled" style="margin-left: 1.5em;">
+                                                @foreach ($childFamily->children as $subFamily)
+                                                    <li>
+                                                        &rarr; {{ link_to_route('users.show', $subFamily->name, [$subFamily->id]) }}
+                                                        @if ($subFamily->children->count() > 0)
+                                                            <ul class="list-unstyled" style="margin-left: 1.5em;">
+                                                                @foreach ($subFamily->children as $subSubFamily)
+                                                                    <li>
+                                                                        &rarr; {{ link_to_route('users.show', $subSubFamily->name, [$subSubFamily->id]) }}
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
+                                    </li>
+                                @endforeach                                
+                                </ul>
+                                
+                                <div class="pull-right">
+                                    {{ link_to_route('users.show', __('app.add_child_family'), [$user->id, 'action' => 'add_child_family'], ['class' => 'btn btn-link btn-xs']) }}
+                                </div>
+                            @else
+                                <span>{{ __('app.no_child_families') }}</span>
+                                <div class="pull-right">
+                                    {{ link_to_route('users.show', __('app.add_child_family'), [$user->id, 'action' => 'add_child_family'], ['class' => 'btn btn-link btn-xs']) }}
+                                </div>
+                            @endif
+                        @endif
+                    @else
+                        @if ($user->family && $user->family->children->count() > 0)
+                            <ul class="list-unstyled">
+                                @foreach($user->family->children as $childFamily)
+                                    <li>{{ link_to_route('users.show', $childFamily->name, [$childFamily->id]) }}</li>
+                                @endforeach
+                            </ul>
+                        @else
+                            {{ __('app.no_child_families') }}
+                        @endif
+                    @endcan
+                </td>
+            </tr>
+            @endif
+            <tr>
                 <th class="col-sm-4">{{ __('user.father') }}</th>
                 <td class="col-sm-8">
                     @can ('edit', $user)

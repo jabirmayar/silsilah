@@ -46,4 +46,29 @@ return [
 
     'open_in_google_map' => 'گوگل نقشہ میں کھولیں',
     'data_not_available' => 'ڈیٹا دستیاب نہیں',
+
+    // Family Name Related 
+    'family'                => 'خاندان',
+    'family_name'           => 'خاندان کا نام',
+    'family_description'    => 'خاندان کی تفصیل',
+    'family_tree'           => 'خاندانی درخت',
+    'family_chart'          => 'خاندانی چارٹ',
+    'parent_family'         => 'مرکزی خاندان',
+    'child_families'        => 'ذیلی خاندان',
+    'child_count'           => 'ذیلی خاندانوں کی تعداد',
+    'no_child_families'     => 'کوئی ذیلی خاندان نہیں',
+    'create_new_family'     => 'نیا خاندان بنائیں',
+    'search_for_family'     => 'خاندان تلاش کریں',
+    'search_parent_family'  => 'مرکزی خاندان تلاش کریں',
+    'set_family'            => 'خاندان تفویض کریں',
+    'change_family'         => 'خاندان تبدیل کریں',
+    'add_child_family'      => 'ذیلی خاندان شامل کریں',
+    'remove'                => 'ہٹائیں',
+    'add'                   => 'شامل کریں',
+    'update'                => 'اپ ڈیٹ کریں',
+    'cancel'                => 'منسوخ کریں',
+    'not_set'               => 'متعین نہیں',
+    'parent'                => 'مرکزی',
+    'are_you_sure'          => 'کیا آپ کو یقین ہے؟',
+
 ];

@@ -3,6 +3,21 @@
 @section('subtitle', trans('user.profile'))
 
 @section('user-content')
+
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible">
+            {{ session('success') }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible">
+            {{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-md-4">
             @include('users.partials.profile')
@@ -36,5 +51,54 @@
         scrollInput: false
     });
 })();
+</script>
+<script>
+$(document).ready(function() {
+    $('.family-select').select2({
+        placeholder: $(this).data('placeholder'),
+        allowClear: true,
+        ajax: {
+            url: "{{ route('family-actions.search-family') }}",
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    q: params.term,
+                    page: params.page
+                };
+            },
+            processResults: function(data, params) {
+                params.page = params.page || 1;
+                return {
+                    results: data.items,
+                    pagination: {
+                        more: (params.page * 10) < data.total_count
+                    }
+                };
+            },
+            cache: true
+        },
+        minimumInputLength: 2
+    });
+    
+    $('#create_new_family').change(function() {
+        if($(this).is(':checked')) {
+            $('#new_family_form').slideDown();
+            $('select[name="family_id"]').prop('disabled', true);
+        } else {
+            $('#new_family_form').slideUp();
+            $('select[name="family_id"]').prop('disabled', false);
+        }
+    });
+    $('#create_new_parent_family').change(function() {
+        if($(this).is(':checked')) {
+            $('#new_parent_family_form').slideDown();
+            $('select[name="parent_family_id"]').prop('disabled', true);
+        } else {
+            $('#new_parent_family_form').slideUp();
+            $('select[name="parent_family_id"]').prop('disabled', false);
+        }
+    });
+});
 </script>
 @endsection

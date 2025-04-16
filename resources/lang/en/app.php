@@ -46,4 +46,30 @@ return [
 
     'open_in_google_map' => 'Open in Google Map',
     'data_not_available' => 'Data not available.',
+
+    // Family Name Related 
+    'family'                => 'Family',
+    'family_name'           => 'Family Name',
+    'family_description'    => 'Family Description',
+    'family_tree'           => 'Family Tree',
+    'family_chart'          => 'Family Chart',
+    'parent_family'         => 'Main Family',
+    'child_families'        => 'Sub-Families',
+    'child_count'           => 'Sub-Family Count',
+    'no_child_families'     => 'No sub-families',
+    'create_new_family'     => 'Create a new family',
+    'search_for_family'     => 'Search for a family',
+    'search_parent_family'  => 'Search for main family',
+    'search_for_child_family'  => 'Search for Sub family',
+    'set_family'            => 'Assign Family',
+    'change_family'         => 'Change Family',
+    'add_child_family'      => 'Add Sub-Family',
+    'remove'                => 'Remove',
+    'add'                   => 'Add',
+    'update'                => 'Update',
+    'cancel'                => 'Cancel',
+    'not_set'               => 'Not assigned',
+    'parent'                => 'Main',
+    'are_you_sure'          => 'Are you sure?',
+
 ];

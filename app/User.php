@@ -3,9 +3,10 @@
 namespace App;
 
 use Carbon\Carbon;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Ramsey\Uuid\Uuid;
+use App\Family;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -104,6 +105,19 @@ class User extends Authenticatable
         }
 
         return false;
+    }
+
+    public function family()
+    {
+        return $this->belongsTo(Family::class);
+    }
+    
+    public function familyLink()
+    {
+        if ($this->family) {
+            return link_to_route('users.show', $this->family->name, [$this->family->id]);
+        }
+        return null;
     }
 
     public function father()

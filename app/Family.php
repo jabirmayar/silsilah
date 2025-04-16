@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Ramsey\Uuid\Uuid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Family extends Model
 {
@@ -13,7 +14,18 @@ class Family extends Model
     public $incrementing = false;
     protected $fillable = ['name', 'description', 'parent_id'];
 
-    public function parent()
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = Uuid::uuid4()->toString();
+            }
+        });
+    }
+
+        public function parent()
     {
         return $this->belongsTo(Family::class, 'parent_id');
     }
@@ -21,5 +33,30 @@ class Family extends Model
     public function children()
     {
         return $this->hasMany(Family::class, 'parent_id');
+    }
+
+    public function ancestors()
+    {
+        $ancestors = collect([]);
+        $current = $this->parent;
+        
+        while ($current) {
+            $ancestors->push($current);
+            $current = $current->parent;
+        }
+        
+        return $ancestors->reverse();
+    }
+
+    public function descendants()
+    {
+        $descendants = collect([]);
+        
+        foreach ($this->children as $child) {
+            $descendants->push($child);
+            $descendants = $descendants->merge($child->descendants());
+        }
+        
+        return $descendants;
     }
 }

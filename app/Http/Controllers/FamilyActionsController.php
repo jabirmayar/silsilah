@@ -5,10 +5,202 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Couple;
 use Ramsey\Uuid\Uuid;
+use App\Family;
 use Illuminate\Http\Request;
 
 class FamilyActionsController extends Controller
 {
+
+    public function setFamily(Request $request, $userId)
+    {
+        $request->validate([
+            'family_id' => 'nullable|exists:families,id',
+            'new_family_name' => 'nullable|string|max:100',
+            'new_family_description' => 'nullable|string',
+            'parent_family_id' => 'nullable|exists:families,id',
+        ]);
+        
+        $user = User::findOrFail($userId);
+        
+        if ($request->filled('new_family_name')) {
+            $family = Family::create([
+                'id' => (string) Uuid::uuid4(),
+                'name' => $request->new_family_name,
+                'description' => $request->new_family_description,
+                'parent_id' => $request->parent_family_id ?: null,
+            ]);
+            
+            $user->family_id = $family->id;
+        } elseif ($request->filled('family_id')) {
+            $user->family_id = $request->family_id;
+        }
+        
+        $user->save();
+        
+        return redirect()->route('users.show', $userId);
+    }
+
+    public function searchFamily(Request $request)
+    {
+        $term = $request->input('q');
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        
+        $families = Family::where('name', 'like', "%{$term}%")
+            ->orderBy('name')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        $formattedFamilies = $families->map(function($family) {
+            return [
+                'id' => $family->id,
+                'text' => $family->name,
+            ];
+        });
+        
+        return response()->json([
+            'items' => $formattedFamilies,
+            'total_count' => $families->total()
+        ]);
+    }
+
+    public function setParentFamily(Request $request, $userId)
+    {
+        $request->validate([
+            'parent_family_id' => 'nullable|exists:families,id',
+            'new_parent_family_name' => 'nullable|string|max:100',
+            'new_parent_family_description' => 'nullable|string',
+        ]);
+        
+        $user = User::findOrFail($userId);
+        
+        if (!$user->family_id) {
+            return back()->with('error', __('User must have a family before setting a parent family'));
+        }
+        
+        $userFamily = Family::findOrFail($user->family_id);
+        
+        if ($request->filled('new_parent_family_name')) {
+            $parentFamily = Family::create([
+                'id' => (string) Uuid::uuid4(),
+                'name' => $request->new_parent_family_name,
+                'description' => $request->new_parent_family_description,
+            ]);
+            
+            $userFamily->parent_id = $parentFamily->id;
+        } elseif ($request->filled('parent_family_id')) {
+
+            if ($request->parent_family_id == $userFamily->id) {
+                return back()->with('error', __('A family cannot be its own parent'));
+            }
+            
+            $parentId = $request->parent_family_id;
+            $checkedIds = [$userFamily->id];
+            
+            while ($parentId) {
+                if (in_array($parentId, $checkedIds)) {
+                    return back()->with('error', __('Circular family hierarchy detected'));
+                }
+                
+                $checkedIds[] = $parentId;
+                $parentFamily = Family::find($parentId);
+                $parentId = $parentFamily ? $parentFamily->parent_id : null;
+            }
+            
+            $userFamily->parent_id = $request->parent_family_id;
+        } else {
+            $userFamily->parent_id = null;
+        }
+        
+        $userFamily->save();
+        
+        return redirect()->route('users.show', $userId)->with('success', __('Family parent updated'));
+    }
+
+    public function removeParentFamily($userId, $familyId)
+    {
+        $user = User::findOrFail($userId);
+        $family = Family::findOrFail($familyId);
+        
+        if ($user->id != $family->manager_id || !is_system_admin($user)) {
+            return back()->with('error', __('Not authorized'));
+        }
+        
+        $family->parent_id = null;
+        $family->save();
+        
+        return redirect()->route('users.show', $userId)->with('success', __('Parent family removed'));
+    }
+
+    public function addChildFamily(Request $request, $userId)
+    {
+        $request->validate([
+            'child_family_id' => 'required|exists:families,id',
+        ]);
+        
+        $user = User::findOrFail($userId);
+        
+        if (!$user->family_id) {
+            return back()->with('error', __('User must have a family before adding child families'));
+        }
+        
+        $userFamily = Family::findOrFail($user->family_id);
+        $childFamily = Family::findOrFail($request->child_family_id);
+        
+        if ($childFamily->id == $userFamily->id) {
+            return back()->with('error', __('A family cannot be its own child'));
+        }
+        
+        if ($this->wouldCreateCircularReference($userFamily->id, $childFamily->id)) {
+            return back()->with('error', __('This would create a circular reference in the family hierarchy'));
+        }
+        
+        $childFamily->parent_id = $userFamily->id;
+        $childFamily->save();
+        
+        return redirect()->route('users.show', $userId)->with('success', __('Child family added'));
+    }
+
+    public function removeChildFamily($userId, $familyId)
+    {
+        $user = User::findOrFail($userId);
+        
+        if (!$user->family_id) {
+            return redirect()->route('users.show', $userId)->with('error', __('User does not have a family'));
+        }
+        
+        $childFamily = Family::findOrFail($familyId);
+        
+        if ($childFamily->parent_id != $user->family_id) {
+            return redirect()->route('users.show', $userId)->with('error', __('This is not a child of your family'));
+        }
+
+        if ($user->id != $childFamily->manager_id || !is_system_admin($user)) {
+            return redirect()->route('users.show', $userId)->with('error', __('Not authorized'));
+        }
+        
+        $childFamily->parent_id = null;
+        $childFamily->save();
+        
+        return redirect()->route('users.show', $userId)->with('success', __('Child family removed'));
+    }
+
+    private function wouldCreateCircularReference($potentialParentId, $familyId)
+    {
+        $current = Family::find($potentialParentId);
+        $checkedIds = [$familyId];
+        
+        while ($current) {
+            if (in_array($current->id, $checkedIds)) {
+                return true; 
+            }
+            
+            $checkedIds[] = $current->id;
+            $current = $current->parent;
+        }
+        
+        return false;
+    }
+
     /**
      * Set father for a user.
      *
