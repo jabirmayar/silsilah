@@ -112,3 +112,59 @@ body {
     top: 50%;
     margin-top: -10px;
 }
+
+.orgchart {
+    transform-origin: 0 0;
+    max-width: 2000px;
+    margin: 0 auto;
+  }
+  
+  #chart-container {
+    height: 100vh;
+    width: 100%;
+    overflow: auto;
+    position: relative;
+    border: 1px solid #ddd;
+  }  
+  
+  .orgchart .node {
+    text-align: center;
+    min-width: 200px !important;
+  }
+  
+  .orgchart .custom-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+  }
+  
+  .orgchart .avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 8px;
+    box-shadow: rgba(99, 99, 99, 0.4) 0px 2px 8px 0px;
+  }
+  
+  
+  .orgchart .custom-node .name {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  
+  .orgchart .custom-node .title {
+    font-size: 13px;
+    color: #fbfafa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
+    padding: 0 5px;
+}
+
+  
+  

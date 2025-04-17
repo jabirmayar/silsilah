@@ -97,8 +97,44 @@ class UsersController extends Controller
      */
     public function tree(User $user)
     {
-        return view('users.tree', compact('user'));
-    }
+        $user->load('childs.childs.childs.childs.childs.childs');
+    
+        $buildTree = function ($person, $level = 0) use (&$buildTree) {
+            $roles = [
+                0 => 'Self',
+                1 => 'Child',
+                2 => 'Grandchild',
+                3 => 'Great Grandchild',
+                4 => 'Great Great Grandchild',
+                5 => 'Great Great Great Grandchild',
+                6 => 'Descendant',
+            ];
+    
+            $role = $roles[$level] ?? 'Descendant';
+    
+            $node = [
+                'id' => $person->id,
+                'name' => $person->name,
+                'title' => $role,
+                'photo' => $person->photo_path ? asset('storage/' . $person->photo_path) : asset('images/icon_user_1.png'),
+            ];
+    
+            if ($person->childs->isNotEmpty()) {
+                $node['children'] = $person->childs->map(function ($child) use ($buildTree, $level) {
+                    return $buildTree($child, $level + 1);
+                })->toArray();
+            }
+    
+            return $node;
+        };
+    
+        $treeData = $buildTree($user);
+    
+        return view('users.tree', [
+            'user' => $user,
+            'treeData' => $treeData,
+        ]);
+    }    
 
     /**
      * Show user death info.
