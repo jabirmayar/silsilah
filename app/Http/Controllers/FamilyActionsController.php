@@ -15,9 +15,13 @@ class FamilyActionsController extends Controller
     {
         $request->validate([
             'family_id' => 'nullable|exists:families,id',
+            'sub_family_id' => 'nullable|exists:families,id',
             'new_family_name' => 'nullable|string|max:100',
             'new_family_description' => 'nullable|string',
             'parent_family_id' => 'nullable|exists:families,id',
+            'new_sub_family_name' => 'nullable|string|max:100',
+            'new_sub_family_description' => 'nullable|string',
+            'sub_family_parent_id' => 'nullable|exists:families,id',
         ]);
         
         $user = User::findOrFail($userId);
@@ -35,9 +39,35 @@ class FamilyActionsController extends Controller
             $user->family_id = $request->family_id;
         }
         
+        if ($request->filled('new_sub_family_name')) {
+            $subFamily = Family::create([
+                'id' => (string) Uuid::uuid4(),
+                'name' => $request->new_sub_family_name,
+                'description' => $request->new_sub_family_description,
+                'parent_id' => $request->sub_family_parent_id ?: $user->family_id,
+            ]);
+            
+            $user->sub_family_id = $subFamily->id;
+        } elseif ($request->filled('sub_family_id')) {
+            $user->sub_family_id = $request->sub_family_id;
+        } else {
+            $user->sub_family_id = null;
+        }
+        
         $user->save();
         
         return redirect()->route('users.show', $userId);
+    }
+
+    public function getSubFamilies(Request $request)
+    {
+        $familyId = $request->input('family_id');
+        
+        $subFamilies = Family::where('parent_id', $familyId)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+        
+        return response()->json($subFamilies);
     }
 
     public function searchFamily(Request $request)

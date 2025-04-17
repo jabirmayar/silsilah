@@ -107,9 +107,21 @@ class User extends Authenticatable
         return false;
     }
 
+
+    /**
+     * Get the family associated with the user.
+    */
     public function family()
     {
         return $this->belongsTo(Family::class);
+    }
+
+    /**
+     * Get the sub-family associated with the user.
+    */
+    public function subFamily()
+    {
+        return $this->belongsTo(Family::class, 'sub_family_id');
     }
     
     public function familyLink()

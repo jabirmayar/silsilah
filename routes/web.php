@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
         Route::get('family-actions/{user}/{family}/remove-parent', 'removeParentFamily')->name('family-actions.remove-parent-family');
         Route::post('family-actions/{user}/add-child-family', 'addChildFamily')->name('family-actions.add-child-family');
         Route::get('family-actions/{user}/{family}/remove-child-family', 'removeChildFamily')->name('family-actions.remove-child-family');
+        Route::get('family-actions/get-sub-families', 'getSubFamilies')->name('family-actions.get-sub-families');
         Route::post('family-actions/{user}/set-father', 'setFather')->name('family-actions.set-father');
         Route::post('family-actions/{user}/set-mother', 'setMother')->name('family-actions.set-mother');
         Route::post('family-actions/{user}/add-child', 'addChild')->name('family-actions.add-child');
