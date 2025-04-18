@@ -32,6 +32,7 @@ class FamilyActionsController extends Controller
                 'name' => $request->new_family_name,
                 'description' => $request->new_family_description,
                 'parent_id' => $request->parent_family_id ?: null,
+                'manager_id' => $user->id,
             ]);
             
             $user->family_id = $family->id;
@@ -45,6 +46,7 @@ class FamilyActionsController extends Controller
                 'name' => $request->new_sub_family_name,
                 'description' => $request->new_sub_family_description,
                 'parent_id' => $request->sub_family_parent_id ?: $user->family_id,
+                'manager_id' => $user->id,
             ]);
             
             $user->sub_family_id = $subFamily->id;
@@ -231,6 +233,40 @@ class FamilyActionsController extends Controller
         return false;
     }
 
+
+    public function searchPeople(Request $request)
+    {
+        $term = $request->input('q');
+        $gender = $request->input('gender');
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        
+        $query = User::where('name', 'like', "%{$term}%");
+        
+        if ($gender) {
+            if ($gender === 'male') {
+                $query->where('gender_id', 1);
+            } elseif ($gender === 'female') {
+                $query->where('gender_id', 2);
+            }
+        }
+        
+        $people = $query->orderBy('name')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        $formattedPeople = $people->map(function($person) {
+            return [
+                'id' => $person->id,
+                'text' => $person->name,
+            ];
+        });
+        
+        return response()->json([
+            'items' => $formattedPeople,
+            'total_count' => $people->total()
+        ]);
+    }
+
     /**
      * Set father for a user.
      *
@@ -259,7 +295,7 @@ class FamilyActionsController extends Controller
             $user->setFather($father);
         }
 
-        return back();
+        return redirect()->route('users.show', $user->id)->with('success', __('Successfully updated'));
     }
 
     /**
@@ -290,7 +326,7 @@ class FamilyActionsController extends Controller
             $user->setMother($mother);
         }
 
-        return back();
+        return redirect()->route('users.show', $user->id)->with('success', __('Successfully updated'));
     }
 
     /**
@@ -368,7 +404,7 @@ class FamilyActionsController extends Controller
 
         $user->addWife($wife, $request->get('marriage_date'));
 
-        return back();
+        return redirect()->route('users.show', $user->id)->with('success', __('Successfully updated'));
     }
 
     /**
@@ -399,7 +435,37 @@ class FamilyActionsController extends Controller
 
         $user->addHusband($husband, $request->get('marriage_date'));
 
-        return back();
+        return redirect()->route('users.show', $user->id)->with('success', __('Successfully updated'));
+    }
+
+
+    public function searchCouples(Request $request)
+    {
+        $term = $request->input('q');
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        
+        $couples = Couple::with(['husband', 'wife'])
+            ->whereHas('husband', function ($query) use ($term) {
+                $query->where('name', 'like', "%{$term}%");
+            })
+            ->orWhereHas('wife', function ($query) use ($term) {
+                $query->where('name', 'like', "%{$term}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        $formattedCouples = $couples->map(function($couple) {
+            return [
+                'id' => $couple->id,
+                'text' => $couple->husband->name . ' & ' . $couple->wife->name,
+            ];
+        });
+        
+        return response()->json([
+            'items' => $formattedCouples,
+            'total_count' => $couples->total()
+        ]);
     }
 
     /**

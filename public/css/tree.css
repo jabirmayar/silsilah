@@ -131,6 +131,13 @@ body {
     text-align: center;
     min-width: 200px !important;
   }
+
+  .orgchart .node:hover {
+    background-color: cbb956 !important;
+    transition: .5s;
+    cursor: default;
+    z-index: 2;
+}
   
   .orgchart .custom-node {
     display: flex;
@@ -166,5 +173,15 @@ body {
     padding: 0 5px;
 }
 
-  
-  
+    .orgchart .node.focused {
+        background-color: rgba(254, 152, 152, 0.5);
+    }
+
+    .name-link {
+        color: inherit;
+        text-decoration: none;
+    }
+    
+    .name-link:hover {
+        text-decoration: underline !important;
+    }

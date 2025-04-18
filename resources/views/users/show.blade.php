@@ -4,20 +4,6 @@
 
 @section('user-content')
 
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible">
-            {{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-        </div>
-    @endif
-
     <div class="row">
         <div class="col-md-4">
             @include('users.partials.profile')
@@ -51,6 +37,83 @@
         scrollInput: false
     });
 })();
+</script>
+<script>
+    // Add this to your JavaScript file or within a <script> tag in your blade template
+$(document).ready(function() {
+    // Generic function to initialize Select2 for person search
+    $('.person-search').each(function() {
+        var $select = $(this);
+        var gender = $select.data('gender') || null;
+        
+        $select.select2({
+            ajax: {
+                url: "{{ route('family-actions.search-people') }}",
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        q: params.term,
+                        page: params.page,
+                        gender: gender
+                    };
+                },
+                processResults: function(data, params) {
+                    params.page = params.page || 1;
+                    
+                    return {
+                        results: data.items,
+                        pagination: {
+                            more: (params.page * 10) < data.total_count
+                        }
+                    };
+                },
+                cache: true
+            },
+            placeholder: $(this).data('placeholder'),
+            minimumInputLength: 2,
+            allowClear: true
+        });
+    });
+    
+    $('.person-search').on('change', function() {
+        var formId = $(this).closest('form').attr('id');
+        if ($(this).val()) {
+            $('#' + formId + ' input[type="text"]').val('');
+        }
+    });
+});
+</script>
+<script>
+$(document).ready(function() {
+    $('.couple-search').select2({
+        ajax: {
+            url: "{{ route('family-actions.search-couples') }}",
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return {
+                    q: params.term,
+                    page: params.page
+                };
+            },
+            processResults: function(data, params) {
+                params.page = params.page || 1;
+                
+                return {
+                    results: data.items,
+                    pagination: {
+                        more: (params.page * 10) < data.total_count
+                    }
+                };
+            },
+            cache: true
+        },
+        placeholder: $(this).data('placeholder'),
+        minimumInputLength: 2,
+        allowClear: true
+    });
+});
 </script>
 <script>
     $(document).ready(function() {

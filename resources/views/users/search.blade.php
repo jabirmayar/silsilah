@@ -37,6 +37,22 @@
                 <h3 class="panel-title">{{ $user->profileLink() }} ({{ $user->gender }})</h3>
                 <div>{{ trans('user.nickname') }} : {{ $user->nickname }}</div>
                 <hr style="margin: 5px 0;">
+                <div>
+                    {{ trans('app.family') }}: 
+                    @php
+                        $familyChain = [];
+                        $currentFamily = $user->family;
+                        while ($currentFamily) {
+                            $familyChain[] = link_to_route('families.show', $currentFamily->name, [$currentFamily->id]);
+                            $currentFamily = $currentFamily->parent;
+                        }
+                        echo implode(' → ', array_reverse($familyChain));
+                    @endphp
+                
+                    @if ($user->sub_family_id)
+                        → {{ $user->subFamily->name }}
+                    @endif
+                </div>
                 <div>{{ trans('user.father') }} : {{ $user->father_id ? $user->father->name : '' }}</div>
                 <div>{{ trans('user.mother') }} : {{ $user->mother_id ? $user->mother->name : '' }}</div>
             </div>

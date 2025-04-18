@@ -127,7 +127,7 @@ class User extends Authenticatable
     public function familyLink()
     {
         if ($this->family) {
-            return link_to_route('users.show', $this->family->name, [$this->family->id]);
+            return link_to_route('families.show', $this->family->name, [$this->family->id]);
         }
         return null;
     }

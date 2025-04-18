@@ -94,12 +94,12 @@
                                     
                                     @if ($user->family->parent)
                                     <div class="parent-families">
-                                        <small>{{ __('app.parent_family') }}: 
+                                        <small>{{ __('app.main_family') }}: 
                                         @php
                                             $parentFamily = $user->family->parent;
                                             $parentChain = [];
                                             while ($parentFamily) {
-                                                $parentChain[] = link_to_route('users.show', $parentFamily->name, [$parentFamily->id]);
+                                                $parentChain[] = link_to_route('families.show', $parentFamily->name, [$parentFamily->id]);
                                                 $parentFamily = $parentFamily->parent;
                                             }
                                             echo implode(' → ', array_reverse($parentChain));
@@ -115,10 +115,10 @@
                                 
                                 @if ($user->subFamily)
                                     <div class="sub-family mt-2">
-                                        <strong>{{ __('app.sub_family') }}:</strong> {{ link_to_route('users.show', $user->subFamily->name, [$user->subFamily->id]) }}
+                                        <strong>{{ __('app.sub_family') }}:</strong> {{ link_to_route('families.show', $user->subFamily->name, [$user->subFamily->id]) }}
                                         
                                         @if ($user->subFamily->parent && $user->subFamily->parent->id != $user->family_id)
-                                            <small>({{ __('app.parent') }}: {{ link_to_route('users.show', $user->subFamily->parent->name, [$user->subFamily->parent->id]) }})</small>
+                                            <small>({{ __('app.parent') }}: {{ link_to_route('families.show', $user->subFamily->parent->name, [$user->subFamily->parent->id]) }})</small>
                                         @endif
                                     </div>
                                 @else
@@ -138,14 +138,14 @@
                                 <div><strong>{{ __('app.main_family') }}:</strong> {{ $user->familyLink() }}</div>
                                 
                                 @if ($user->family->parent)
-                                    <small>({{ __('app.parent') }}: {{ link_to_route('users.show', $user->family->parent->name, [$user->family->parent_id]) }})</small>
+                                    <small>({{ __('app.parent') }}: {{ link_to_route('families.show', $user->family->parent->name, [$user->family->parent_id]) }})</small>
                                 @endif
                             @else
                                 <div><strong>{{ __('app.main_family') }}:</strong> {{ __('app.not_set') }}</div>
                             @endif
                             
                             @if ($user->subFamily)
-                                <div class="mt-1"><strong>{{ __('app.sub_family') }}:</strong> {{ link_to_route('users.show', $user->subFamily->name, [$user->subFamily->id]) }}</div>
+                                <div class="mt-1"><strong>{{ __('app.sub_family') }}:</strong> {{ link_to_route('families.show', $user->subFamily->name, [$user->subFamily->id]) }}</div>
                             @else
                                 <div class="mt-1"><strong>{{ __('app.sub_family') }}:</strong> {{ __('app.not_set') }}</div>
                             @endif
@@ -159,11 +159,15 @@
                     @can ('edit', $user)
                         @if (request('action') == 'set_father')
                         {{ Form::open(['route' => ['family-actions.set-father', $user->id]]) }}
-                        {!! FormField::select('set_father_id', $malePersonList, ['label' => false, 'value' => $user->father_id, 'placeholder' => __('app.select_from_existing_males')]) !!}
-                        <div class="input-group">
+                        <select name="set_father_id" id="father-select" class="form-control person-search" data-placeholder="{{ __('app.select_from_existing_males') }}">
+                            @if ($user->father_id)
+                                <option value="{{ $user->father_id }}" selected>{{ $user->father->name }}</option>
+                            @endif
+                        </select>
+                        <div class="input-group mt-2">
                             {{ Form::text('set_father', null, ['class' => 'form-control input-sm', 'placeholder' => __('app.enter_new_name')]) }}
                             <span class="input-group-btn">
-                                {{ Form::submit(__('app.update'), ['class' => 'btn btn-info btn-sm', 'id' => 'set_father_button']) }}
+                                {{ Form::submit(__('app.update'), ['class' => 'btn btn-primary btn-sm', 'id' => 'set_father_button']) }}
                                 {{ link_to_route('users.show', __('app.cancel'), [$user->id], ['class' => 'btn btn-default btn-sm']) }}
                             </span>
                         </div>
@@ -185,11 +189,15 @@
                     @can ('edit', $user)
                         @if (request('action') == 'set_mother')
                         {{ Form::open(['route' => ['family-actions.set-mother', $user->id]]) }}
-                        {!! FormField::select('set_mother_id', $femalePersonList, ['label' => false, 'value' => $user->mother_id, 'placeholder' => __('app.select_from_existing_females')]) !!}
-                        <div class="input-group">
+                        <select name="set_mother_id" id="mother-select" class="form-control person-search" data-placeholder="{{ __('app.select_from_existing_females') }}" data-gender="female">
+                            @if ($user->mother_id)
+                                <option value="{{ $user->mother_id }}" selected>{{ $user->mother->name }}</option>
+                            @endif
+                        </select>
+                        <div class="input-group mt-2">
                             {{ Form::text('set_mother', null, ['class' => 'form-control input-sm', 'placeholder' => __('app.enter_new_name')]) }}
                             <span class="input-group-btn">
-                                {{ Form::submit(__('app.update'), ['class' => 'btn btn-info btn-sm', 'id' => 'set_mother_button']) }}
+                                {{ Form::submit(__('app.update'), ['class' => 'btn btn-primary btn-sm', 'id' => 'set_mother_button']) }}
                                 {{ link_to_route('users.show', __('app.cancel'), [$user->id], ['class' => 'btn btn-default btn-sm']) }}
                             </span>
                         </div>
@@ -215,17 +223,21 @@
                         @endunless
                     </div>
                     @endcan
-
                     @if ($user->parent)
                     {{ $user->parent->husband->name }} & {{ $user->parent->wife->name }}
                     @endif
-
                     @can('edit', $user)
                         @if (request('action') == 'set_parent')
                             {{ Form::open(['route' => ['family-actions.set-parent', $user->id]]) }}
-                            {!! FormField::select('set_parent_id', $allMariageList, ['label' => false, 'value' => $user->parent_id, 'placeholder' => __('app.select_from_existing_couples')]) !!}
-                            {{ Form::submit(__('app.update'), ['class' => 'btn btn-info btn-sm', 'id' => 'set_parent_button']) }}
-                            {{ link_to_route('users.show', __('app.cancel'), $user, ['class' => 'btn btn-default btn-sm']) }}
+                            <select name="set_parent_id" class="form-control couple-search" data-placeholder="{{ __('app.select_from_existing_couples') }}">
+                                @if ($user->parent_id)
+                                    <option value="{{ $user->parent_id }}" selected>
+                                        {{ $user->parent->husband->name }} & {{ $user->parent->wife->name }}
+                                    </option>
+                                @endif
+                            </select>
+                            {{ Form::submit(__('app.update'), ['class' => 'btn btn-primary btn-sm mt-2', 'id' => 'set_parent_button']) }}
+                            {{ link_to_route('users.show', __('app.cancel'), $user, ['class' => 'btn btn-default btn-sm mt-2']) }}
                             {{ Form::close() }}
                         @endif
                     @endcan
@@ -242,7 +254,6 @@
                         @endunless
                     </div>
                     @endcan
-
                     @if ($user->wifes->isEmpty() == false)
                         <ul class="list-unstyled">
                             @foreach($user->wifes as $wife)
@@ -254,18 +265,19 @@
                         @if (request('action') == 'add_spouse')
                         <div>
                             {{ Form::open(['route' => ['family-actions.add-wife', $user->id]]) }}
-                            {!! FormField::select('set_wife_id', $femalePersonList, ['label' => false, 'placeholder' => __('app.select_from_existing_females')]) !!}
-                            <div class="form-group">
+                            <select name="set_wife_id" class="form-control person-search" data-placeholder="{{ __('app.select_from_existing_females') }}" data-gender="female">
+                            </select>
+                            <div class="form-group mt-2">
                                 <div class="row">
                                     <div class="col-md-7">
                                         {{ Form::text('set_wife', null, ['class' => 'form-control input-sm', 'placeholder' => __('app.enter_new_name')]) }}
                                     </div>
                                     <div class="col-md-5">
-                                        {{ Form::text('marriage_date', null, ['class' => 'form-control input-sm', 'placeholder' => __('couple.marriage_date')]) }}
+                                        {{ Form::text('marriage_date', null, ['class' => 'form-control input-sm datepicker', 'placeholder' => __('couple.marriage_date')]) }}
                                     </div>
                                 </div>
                             </div>
-                            {{ Form::submit(__('app.update'), ['class' => 'btn btn-info btn-sm', 'id' => 'set_wife_button']) }}
+                            {{ Form::submit(__('app.update'), ['class' => 'btn btn-primary btn-sm', 'id' => 'set_wife_button']) }}
                             {{ link_to_route('users.show', __('app.cancel'), $user, ['class' => 'btn btn-default btn-sm']) }}
                             {{ Form::close() }}
                         </div>
@@ -273,7 +285,7 @@
                     @endcan
                 </td>
             </tr>
-            @else
+        @else
             <tr>
                 <th>{{ __('user.husband') }}</th>
                 <td>
@@ -295,18 +307,19 @@
                         @if (request('action') == 'add_spouse')
                         <div>
                             {{ Form::open(['route' => ['family-actions.add-husband', $user->id]]) }}
-                            {!! FormField::select('set_husband_id', $malePersonList, ['label' => false, 'placeholder' => __('app.select_from_existing_males')]) !!}
-                            <div class="form-group">
+                            <select name="set_husband_id" class="form-control person-search" data-placeholder="{{ __('app.select_from_existing_males') }}" data-gender="male">
+                            </select>
+                            <div class="form-group mt-2">
                                 <div class="row">
                                     <div class="col-md-7">
                                         {{ Form::text('set_husband', null, ['class' => 'form-control input-sm', 'placeholder' => __('app.enter_new_name')]) }}
                                     </div>
                                     <div class="col-md-5">
-                                        {{ Form::text('marriage_date', null, ['class' => 'form-control input-sm', 'placeholder' => __('couple.marriage_date')]) }}
+                                        {{ Form::text('marriage_date', null, ['class' => 'form-control input-sm datepicker', 'placeholder' => __('couple.marriage_date')]) }}
                                     </div>
                                 </div>
                             </div>
-                            {{ Form::submit(__('app.update'), ['class' => 'btn btn-info btn-sm', 'id' => 'set_husband_button']) }}
+                            {{ Form::submit(__('app.update'), ['class' => 'btn btn-primary btn-sm', 'id' => 'set_husband_button']) }}
                             {{ link_to_route('users.show', __('app.cancel'), [$user->id], ['class' => 'btn btn-default btn-sm']) }}
                             {{ Form::close() }}
                         </div>
@@ -314,7 +327,7 @@
                     @endcan
                 </td>
             </tr>
-            @endif
+        @endif
         </tbody>
     </table>
 </div>

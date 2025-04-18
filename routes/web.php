@@ -1,15 +1,16 @@
 <?php
 
-use App\Http\Controllers\Auth\ChangePasswordController;
-use App\Http\Controllers\BackupsController;
-use App\Http\Controllers\BirthdayController;
-use App\Http\Controllers\CouplesController;
-use App\Http\Controllers\FamilyActionsController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\UserMarriagesController;
-use App\Http\Controllers\UsersController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UsersController;
+use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\BackupsController;
+use App\Http\Controllers\CouplesController;
+use App\Http\Controllers\BirthdayController;
+use App\Http\Controllers\FamilyActionsController;
+use App\Http\Controllers\UserMarriagesController;
+use App\Http\Controllers\Auth\ChangePasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,8 @@ Route::middleware('auth')->group(function () {
     Route::controller(FamilyActionsController::class)->group(function () {
         Route::post('family-actions/{user}/set-family', 'setFamily')->name('family-actions.set-family');
         Route::get('family-actions/search-family', 'searchFamily')->name('family-actions.search-family');
+        Route::get('family-actions/search-people', 'searchPeople')->name('family-actions.search-people');
+        Route::get('family-actions/search-couples', 'searchCouples')->name('family-actions.search-couples');
         Route::post('family-actions/{user}/set-parent-family', 'setParentFamily')->name('family-actions.set-parent-family');
         Route::get('family-actions/{user}/{family}/remove-parent', 'removeParentFamily')->name('family-actions.remove-parent-family');
         Route::post('family-actions/{user}/add-child-family', 'addChildFamily')->name('family-actions.add-child-family');
@@ -58,6 +61,17 @@ Route::middleware('auth')->group(function () {
         Route::get('users/{user}/death', 'death')->name('users.death');
         Route::patch('users/{user}/photo-upload', 'photoUpload')->name('users.photo-upload');
         Route::delete('users/{user}', 'destroy')->name('users.destroy');
+    });
+
+    Route::controller(FamilyController::class)->group(function () {
+        Route::get('families', 'index')->name('families.index');
+        Route::get('families/create', 'create')->name('families.create');
+        Route::get('families/search', 'search')->name('families.search');
+        Route::post('families', 'store')->name('families.store');
+        Route::get('families/{family}', 'show')->name('families.show');
+        Route::get('families/{family}/edit', 'edit')->name('families.edit');
+        Route::put('families/{family}', 'update')->name('families.update');
+        Route::delete('families/{family}', 'destroy')->name('families.destroy');
     });
 
     Route::get('users/{user}/marriages', [UserMarriagesController::class, 'index'])->name('users.marriages');

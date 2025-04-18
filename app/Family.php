@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\User;
 use Ramsey\Uuid\Uuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ class Family extends Model
 
     protected $keyType = 'string';
     public $incrementing = false;
-    protected $fillable = ['name', 'description', 'parent_id'];
+    protected $fillable = ['name', 'description', 'parent_id','manager_id'];
 
     protected static function boot()
     {
@@ -25,7 +26,12 @@ class Family extends Model
         });
     }
 
-        public function parent()
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function parent()
     {
         return $this->belongsTo(Family::class, 'parent_id');
     }

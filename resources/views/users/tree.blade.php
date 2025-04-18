@@ -28,17 +28,21 @@ $(function () {
         zoom: true,
         createNode: function ($node, data) {
             const imageSrc = data.photo || "{{ asset('images/icon_user_1.png') }}";
-            const linkContent = `
-                <a href="{{ route('users.tree', ['user' => 'USER_ID']) }}">
-                    <div class="custom-node">
-                        <img class="avatar" src="${imageSrc}" />
-                        <div class="name">${data.name}</div>
-                        <div class="title">${data.title}</div>
+            const profileUrl = `{{ url('users/') }}/${data.id}/tree`;
+
+            const customContent = `
+                <div class="custom-node">
+                    <img class="avatar" src="${imageSrc}" />
+                    <div class="name">
+                        <a href="${profileUrl}" class="name-link">
+                            ${data.name}
+                        </a>
                     </div>
-                </a>
+                    <div class="title">${data.title}</div>
+                </div>
             `;
-            const nodeContent = linkContent.replace('USER_ID', data.id);
-            $node.append(nodeContent);
+
+            $node.append(customContent);
             $node.children('.content').remove();
             $node.children('.title').remove();
         }
