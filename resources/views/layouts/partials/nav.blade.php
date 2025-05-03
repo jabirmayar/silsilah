@@ -22,6 +22,9 @@
                 <li><a href="{{ route('users.search') }}">{{ __('app.search_your_family') }}</a></li>
                 <li><a href="{{ route('birthdays.index') }}">{{ __('birthday.birthday') }}</a></li>
                 <li><a href="{{ route('families.index') }}">{{ __('app.all_families') }}</a></li>
+                @if (Auth::check() && is_system_admin(Auth::user()))
+                    <li><a href="{{ route('users.index') }}">{{ __('app.users_list') }}</a></li>
+                @endif            
             </ul>
 
             <!-- Right Side Of Navbar -->

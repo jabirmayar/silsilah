@@ -33,4 +33,6 @@ return [
     'send_reset_password_link'  => 'پاس ورڈ ری سیٹ لنک بھیجیں',
     'change_password_success'   => 'پاس ورڈ کامیابی سے تبدیل ہوگیا',
     'change_password_error'    => 'پاس ورڈ تبدیل کرنے میں ایرر ہے',
+    'inactive'                 => 'آپ کا اکاؤنٹ غیر فعال ہے۔ براہ کرم منتظم سے :email پر رابطہ کریں۔',
+
 ];

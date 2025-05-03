@@ -28,6 +28,11 @@ Auth::routes();
 Route::middleware('auth')->group(function () {
     Route::get('/', [UsersController::class, 'search']);
 
+    Route::get('/users', [UsersController::class, 'index'])->name('users.index');
+    Route::patch('/users/{user}/status', [UsersController::class, 'updateStatus'])
+    ->name('users.update_status')
+    ->middleware('auth');
+
     Route::controller(HomeController::class)->group(function () {
         Route::get('home', 'index')->name('home');
         Route::get('profile', 'index')->name('profile');

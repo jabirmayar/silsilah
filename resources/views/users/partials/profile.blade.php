@@ -39,6 +39,18 @@
                     @endif
                 </td>
             </tr>
+             <tr>
+                <th>{{ trans('app.status') }}</th>
+                <td>
+                    @if ($user->status === 1)
+                        <span class="label label-success">{{ trans('app.active') }}</span>
+                    @elseif ($user->status === 0)
+                        <span class="label label-warning">{{ trans('app.inactive') }}</span>
+                    @else
+                        <span class="label label-default">{{ trans('app.unknown') }}</span>
+                    @endif
+                </td>
+            </tr>
             @if ($user->email)
             <tr>
                 <th>{{ trans('user.email') }}</th>
@@ -53,6 +65,38 @@
                 <th>{{ trans('user.address') }}</th>
                 <td>{!! nl2br($user->address) !!}</td>
             </tr>
+
+            {{-- Admin Status Change Controls --}}
+            @if (Auth::check() && is_system_admin(Auth::user()) && Auth::user()->id != $user->id)
+            <tr>
+                <th>{{ trans('app.change_status') }}</th>
+                 <td>
+                    @if ($user->status === 1)
+                        <form method="POST" action="{{ route('users.update_status', $user->id) }}" style="display: inline-block;">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="status" value="0">
+                            <input type="hidden" name="origin" value="show">
+                            <button type="submit" class="btn btn-warning btn-xs">
+                                {{ trans('app.deactivate') }}
+                            </button>
+                        </form>
+                    @elseif ($user->status === 0)
+                        <form method="POST" action="{{ route('users.update_status', $user->id) }}" style="display: inline-block;">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="status" value="1">
+                            <input type="hidden" name="origin" value="show">
+                            <button type="submit" class="btn btn-success btn-xs">
+                                {{ trans('app.activate') }}
+                            </button>
+                        </form>
+                    @endif
+                </td>
+            </tr>
+            @endif
+            {{-- End Admin Status Change Controls --}}
+
         </tbody>
     </table>
 </div>

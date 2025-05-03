@@ -69,6 +69,7 @@ class RegisterController extends Controller
             'id' => Uuid::uuid4()->toString(),
             'nickname' => $data['nickname'],
             'name' => $data['name'],
+            'status' => true,
             'gender_id' => $data['gender_id'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),

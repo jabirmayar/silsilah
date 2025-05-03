@@ -21,7 +21,9 @@
 
 @if (request('q'))
 <br>
-{{ $users->appends(Request::except('page'))->render() }}
+<div class="text-center">
+    {!! $users->appends(Request::except('page'))->links('pagination::bootstrap-4') !!}
+</div>
 @foreach ($users->chunk(4) as $chunkedUser)
 <div class="row">
     @foreach ($chunkedUser as $user)
@@ -38,7 +40,7 @@
                 <div>{{ trans('user.nickname') }} : {{ $user->nickname }}</div>
                 <hr style="margin: 5px 0;">
                 <div>
-                    {{ trans('app.family') }}: 
+                    {{ trans('app.family') }}:
                     @php
                         $familyChain = [];
                         $currentFamily = $user->family;
@@ -48,13 +50,27 @@
                         }
                         echo implode(' → ', array_reverse($familyChain));
                     @endphp
-                
-                    @if ($user->sub_family_id)
-                        → {{ $user->subFamily->name }}
+
+                    @if ($user->sub_family_id && $user->subFamily)
+                        → {!! link_to_route('families.show', $user->subFamily->name, [$user->subFamily->id]) !!}
                     @endif
                 </div>
-                <div>{{ trans('user.father') }} : {{ $user->father_id ? $user->father->name : '' }}</div>
-                <div>{{ trans('user.mother') }} : {{ $user->mother_id ? $user->mother->name : '' }}</div>
+                <div>
+                    {{ trans('user.father') }} :
+                    @if ($user->father_id && $user->father)
+                        {!! link_to_route('users.show', $user->father->name, [$user->father->id]) !!}
+                    @else
+                        N/A
+                    @endif
+                </div>
+                <div>
+                    {{ trans('user.mother') }} :
+                    @if ($user->mother_id && $user->mother)
+                        {!! link_to_route('users.show', $user->mother->name, [$user->mother->id]) !!}
+                    @else
+                        N/A
+                    @endif
+                </div>
             </div>
             <div class="panel-footer">
                 {{ link_to_route('users.show', trans('app.show_profile'), [$user->id], ['class' => 'btn btn-default btn-xs']) }}
@@ -66,6 +82,9 @@
 </div>
 @endforeach
 
-{{ $users->appends(Request::except('page'))->render() }}
+<div class="text-center">
+    {!! $users->appends(Request::except('page'))->links('pagination::bootstrap-4') !!}
+</div>
+
 @endif
 @endsection

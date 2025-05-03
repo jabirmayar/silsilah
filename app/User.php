@@ -40,7 +40,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'id', 'birth_order',
-        'nickname', 'gender_id', 'name',
+        'nickname', 'gender_id', 'name', 'status',
         'email', 'password',
         'address', 'phone',
         'dob', 'yob', 'dod', 'yod', 'city',

@@ -2,19 +2,86 @@
 
 namespace App\Http\Controllers;
 
-use App\Couple;
-use App\Http\Requests\Users\UpdateRequest;
-use App\Jobs\Images\OptimizeImages;
-use App\Jobs\Users\DeleteAndReplaceUser;
-use App\User;
-use App\UserMetadata;
-use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Ramsey\Uuid\Uuid;
 use Storage;
+use App\User;
+use App\Couple;
+use App\UserMetadata;
+use Ramsey\Uuid\Uuid;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Collection;
+use App\Jobs\Images\OptimizeImages;
+use Illuminate\Support\Facades\Auth;
+use App\Jobs\Users\DeleteAndReplaceUser;
+use App\Http\Requests\Users\UpdateRequest;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class UsersController extends Controller
 {
+    public function index(Request $request)
+    {
+        if (!Auth::check() || !is_system_admin(Auth::user())) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $q = $request->get('q');
+        $query = User::with('father', 'mother', 'family.parent', 'subFamily')
+                     ->orderBy('created_at', 'desc');
+
+        if ($q) {
+            $query->where(function ($subQuery) use ($q) {
+                $subQuery->where('name', 'like', '%'.$q.'%')
+                         ->orWhere('nickname', 'like', '%'.$q.'%');
+                 $subQuery->orWhereHas('family', function ($familyQuery) use ($q) {
+                    $familyQuery->where('name', 'like', '%'.$q.'%');
+                 });
+                 $subQuery->orWhereHas('subFamily', function ($subFamilyQuery) use ($q) {
+                    $subFamilyQuery->where('name', 'like', '%'.$q.'%');
+                 });
+            });
+        }
+
+        $users = $query->paginate(10)->withQueryString();
+
+        return view('users.list', compact('users', 'q'));
+    }
+
+    public function updateStatus(Request $request, User $user)
+    {
+        if (!Auth::check() || !is_system_admin(Auth::user())) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (Auth::user()->id === $user->id) {
+            $errorMessage = 'You cannot change your own status.';
+            if ($request->input('origin') === 'show') {
+                return redirect()->route('users.show', $user)->with('error', $errorMessage);
+            } else {
+                $queryParameters = $request->except(['origin', '_token', '_method', 'status']);
+                return redirect()->route('users.index', $queryParameters)->with('error', $errorMessage);
+            }
+        }
+
+        $request->validate([
+            'status' => ['required', Rule::in([0, 1])],
+            'origin' => ['nullable', Rule::in(['index', 'show'])]
+        ]);
+
+        $user->status = $request->input('status');
+        $user->save();
+
+        $successMessage = 'User status updated successfully.';
+
+        if ($request->input('origin') === 'show') {
+            return redirect()->route('users.show', $user)
+                             ->with('success', $successMessage);
+        } else {
+            $queryParameters = $request->except(['origin', '_token', '_method', 'status']);
+            return redirect()->route('users.index', $queryParameters)
+                             ->with('success', $successMessage);
+        }
+    }
+
     /**
      * Search user by keyword.
      *
@@ -26,12 +93,24 @@ class UsersController extends Controller
         $users = [];
 
         if ($q) {
-            $users = User::with('father', 'mother')->where(function ($query) use ($q) {
-                $query->where('name', 'like', '%'.$q.'%');
-                $query->orWhere('nickname', 'like', '%'.$q.'%');
-            })
-                ->orderBy('name', 'asc')
-                ->paginate(24);
+            $query = User::with('father', 'mother', 'family', 'subFamily');
+
+            $query->where(function ($query) use ($q) {
+                $query->where('name', 'like', '%'.$q.'%')
+                      ->orWhere('nickname', 'like', '%'.$q.'%');
+
+                $query->orWhereHas('family', function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', '%'.$q.'%');
+                });
+
+                $query->orWhereHas('subFamily', function ($subQuery) use ($q) {
+                    $subQuery->where('name', 'like', '%'.$q.'%');
+                });
+            });
+
+            $users = $query->orderBy('name', 'asc')->paginate(10);
+        } else {
+             $users = new LengthAwarePaginator([], 0, 10);
         }
 
         return view('users.search', compact('users'));
