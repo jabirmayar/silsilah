@@ -39,6 +39,7 @@
                     @endif
                 </td>
             </tr>
+            @if (Auth::check() && is_system_admin(Auth::user()) || Auth::user()->id == $user->id)
              <tr>
                 <th>{{ trans('app.status') }}</th>
                 <td>
@@ -51,6 +52,7 @@
                     @endif
                 </td>
             </tr>
+            @endif
             @if ($user->email)
             <tr>
                 <th>{{ trans('user.email') }}</th>

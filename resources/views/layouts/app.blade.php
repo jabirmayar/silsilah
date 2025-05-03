@@ -12,6 +12,11 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/orgchart/5.0.0/css/jquery.orgchart.min.css" integrity="sha512-9A2BSSUL5eXVMWwrB8aDX8GeOOSMMVCk3fvqOplnswmo4IN4s6DW2ywpb3VCDcGCVwDc3g6S1k9T72NsCkgw5A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     @yield('ext_css')
     <style>
