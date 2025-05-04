@@ -54,8 +54,9 @@ class RegisterController extends Controller
             'gender_id' => 'required|numeric|in:1,2',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
+            'captcha' => 'required|captcha',
         ]);
-    }
+    }    
 
     /**
      * Create a new user instance after a valid registration.

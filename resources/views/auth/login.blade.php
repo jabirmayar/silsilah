@@ -28,7 +28,14 @@
                             <label for="password" class="col-md-4 control-label">{{ trans('auth.password') }}</label>
 
                             <div class="col-md-6">
-                                <input id="password" type="password" class="form-control" name="password" required>
+                                <div class="input-group">
+                                    <input id="password" type="password" class="form-control" name="password" required>
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default toggle-password" type="button" data-target="password">
+                                            <i class="fa fa-eye"></i>
+                                        </button>
+                                    </span>
+                                </div>                                
 
                                 @if ($errors->has('password'))
                                     <span class="help-block">
@@ -65,4 +72,22 @@
         </div>
     </div>
 </div>
+<script>
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const input = document.getElementById(targetId);
+            const icon = this.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+</script>
 @endsection

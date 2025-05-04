@@ -97,6 +97,10 @@ Route::middleware('auth')->group(function () {
     });
 });
 
+Route::get('/reload-captcha', function () {
+    return response()->json(['captcha' => captcha_img('flat')]);
+});
+
 /**
  * Admin only routes
  */
