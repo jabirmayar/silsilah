@@ -240,9 +240,10 @@ class FamilyActionsController extends Controller
         $gender = $request->input('gender');
         $page = $request->input('page', 1);
         $perPage = 10;
-        
-        $query = User::where('name', 'like', "%{$term}%");
-        
+    
+        $query = User::with(['family', 'subFamily'])
+            ->where('name', 'like', "%{$term}%");
+    
         if ($gender) {
             if ($gender === 'male') {
                 $query->where('gender_id', 1);
@@ -250,22 +251,23 @@ class FamilyActionsController extends Controller
                 $query->where('gender_id', 2);
             }
         }
-        
+    
         $people = $query->orderBy('name')
             ->paginate($perPage, ['*'], 'page', $page);
-        
+    
         $formattedPeople = $people->map(function($person) {
+            $familyName = $person->subFamily->name ?? $person->family->name ?? null;
             return [
                 'id' => $person->id,
-                'text' => $person->name,
+                'text' => $person->name . ($familyName ? " ({$familyName})" : ''),
             ];
         });
-        
+    
         return response()->json([
             'items' => $formattedPeople,
             'total_count' => $people->total()
         ]);
-    }
+    }    
 
     /**
      * Set father for a user.

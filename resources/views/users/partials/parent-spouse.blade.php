@@ -161,7 +161,13 @@
                         {{ Form::open(['route' => ['family-actions.set-father', $user->id]]) }}
                         <select name="set_father_id" id="father-select" class="form-control person-search" data-placeholder="{{ __('app.select_from_existing_males') }}">
                             @if ($user->father_id)
-                                <option value="{{ $user->father_id }}" selected>{{ $user->father->name }}</option>
+                                @php
+                                    $father = $user->father;
+                                    $familyName = $father->subFamily->name ?? $father->family->name ?? '';
+                                @endphp
+                                <option value="{{ $father->id }}" selected>
+                                    {{ $father->name }} {{ $familyName ? "({$familyName})" : '' }}
+                                </option>
                             @endif
                         </select>
                         <div class="input-group mt-2">
