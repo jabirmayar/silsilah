@@ -3,63 +3,72 @@
 @section('subtitle', trans('app.family_tree'))
 
 @section('user-content')
-
-
-<button id="reset-chart" class="btn btn-sm btn-primary mb-2">Reset View</button>
-<div id="chart-container"></div>
-
+    <div id="tree" style="width: 100%; height: 600px;"></div>
 @endsection
 
 @section('ext_css')
-<link rel="stylesheet" href="{{ asset('css/tree.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/tree.css') }}">
 @endsection
 
 @section('ext_js')
 <script>
-$(function () {
-    const treeData = @json($treeData);
+    document.addEventListener('DOMContentLoaded', function () {
+        const rawTree = @json($treeData);
 
-    const chart = $('#chart-container').orgchart({
-        data: treeData,
-        nodeContent: 'title',
-        nodeID: 'id',
-        visibleLevel: 6,
-        pan: true,
-        zoom: true,
-        createNode: function ($node, data) {
-            const imageSrc = data.photo || "{{ asset('images/icon_user_1.png') }}";
-            const profileUrl = `{{ url('users/') }}/${data.id}/tree`;
+        const members = [];
 
-            const customContent = `
-                <div class="custom-node">
-                    <img class="avatar" src="${imageSrc}" />
-                    <div class="name">
-                        <a href="${profileUrl}" class="name-link">
-                            ${data.name}
-                        </a>
-                    </div>
-                    <div class="title">${data.title}</div>
-                </div>
-            `;
+        function flattenFamilyTree(person, parentId = null) {
+            const node = {
+                id: person.id,
+                name: `<a href="{{ url('users') }}/${person.id}/tree">${person.name}</a>`,
+                photo: person.photo,
+                title: person.title,
+                siblingIds: person.siblingIds || [],
+                childIds: person.childIds || [],
+                userProfileUrl: `{{ url('users') }}/${person.id}/tree`,
+                fatherId: person.father_id || null,
+                motherId: person.mother_id || null,
+                spouseIds: person.gender_id == 2 && person.husbands 
+                                ? person.husbands.map(husband => husband.id) : person.gender_id == 1 && person.wifes 
+                                ? person.wifes.map(wife => wife.id) : [],
+            };
 
-            $node.append(customContent);
-            $node.children('.content').remove();
-            $node.children('.title').remove();
+            if (parentId) {
+                node.fatherId = parentId;
+            }
+
+            members.push(node);
+
+            if (person.children) {
+                person.children.forEach(child => {
+                    flattenFamilyTree(child, person.id);
+                });
+            }
         }
-    });
 
-    $('#chart-container .orgchart').css('transform', 'scale(0.8)');
-});
-</script>    
-<script>
-    $('#reset-chart').on('click', function () {
-    $('#chart-container .orgchart').css({
-        transform: 'scale(0.8) translate(0px, 0px)',
-        transformOrigin: '0 0'
-    });
-});
+        flattenFamilyTree(rawTree);
 
+        const familyTree = new FamilyTree2(document.getElementById('tree'));
+        familyTree.templateName = 'mars';
+        let template = familyTree.template;
+
+        familyTree.onNodeClick(function (args) {
+            if (this.readOnly) {
+                this.centerNodes([args.node]);
+            }
+
+            if (args.node.userProfileUrl) {
+                window.location.href = args.node.userProfileUrl;
+            }
+        });
+
+        familyTree.onSvgClick(function () {
+            this.fit();
+        });
+
+        familyTree.addFamilyMembers(members).draw(rawTree.id);
+
+    });
 </script>
+
 @endsection
-
-

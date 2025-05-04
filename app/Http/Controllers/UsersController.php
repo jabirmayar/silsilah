@@ -176,8 +176,8 @@ class UsersController extends Controller
      */
     public function tree(User $user)
     {
-        $user->load('childs.childs.childs.childs.childs.childs');
-    
+        $user->load('childs.childs.childs.childs.childs.childs', 'husbands', 'wifes');
+        
         $buildTree = function ($person, $level = 0) use (&$buildTree) {
             $roles = [
                 0 => 'Self',
@@ -188,32 +188,35 @@ class UsersController extends Controller
                 5 => 'Great Great Great Grandchild',
                 6 => 'Descendant',
             ];
-    
+        
             $role = $roles[$level] ?? 'Descendant';
-    
+        
             $node = [
                 'id' => $person->id,
-                'name' => $person->name,
+                'name' => $person->name, 
                 'title' => $role,
                 'photo' => $person->photo_path ? asset('storage/' . $person->photo_path) : asset('images/icon_user_1.png'),
+                'siblingIds' => $person->siblings()?->pluck('id')->values()->toArray() ?? [],
+                'childIds' => $person->childs?->pluck('id')->values()->toArray() ?? [],
+                'spouseIds' => $person->gender_id == 2 ? $person->husbands->pluck('id')->toArray() : $person->wifes->pluck('id')->toArray(),
             ];
-    
-            if ($person->childs->isNotEmpty()) {
+        
+            if ($person->relationLoaded('childs') && $person->childs->isNotEmpty()) {
                 $node['children'] = $person->childs->map(function ($child) use ($buildTree, $level) {
                     return $buildTree($child, $level + 1);
                 })->toArray();
             }
-    
+        
             return $node;
         };
-    
+        
         $treeData = $buildTree($user);
-    
+        
         return view('users.tree', [
             'user' => $user,
             'treeData' => $treeData,
         ]);
-    }    
+    }       
 
     /**
      * Show user death info.
